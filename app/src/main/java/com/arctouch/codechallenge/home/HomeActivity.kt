@@ -1,5 +1,6 @@
 package com.arctouch.codechallenge.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import com.arctouch.codechallenge.api.TmdbApi
@@ -27,19 +28,31 @@ class HomeActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home_activity)
 
-        api.upcomingMovies(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, 1, "")
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                moviesWithGenres  =  it.results.map { movie ->
-                     movie.copy(genres = Cache.genres.filter { movie.genreIds?.contains(it.id) == true })
-                 }.toMutableList()
-                recyclerView.adapter = HomeAdapter(moviesWithGenres)
-                progressBar.visibility = View.GONE
-            }
+        api.genres(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    Cache.cacheGenres(it.genres)
+                    initList()
+                }
+
+
 
 
         initScrollListener()
+    }
+
+    private fun initList(){
+        api.upcomingMovies(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, 1, "")
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    moviesWithGenres  =  it.results.map { movie ->
+                        movie.copy(genres = Cache.genres.filter { movie.genreIds?.contains(it.id) == true })
+                    }.toMutableList()
+                    recyclerView.adapter = HomeAdapter(moviesWithGenres)
+                    progressBar.visibility = View.GONE
+                }
     }
 
     private fun initScrollListener() {
