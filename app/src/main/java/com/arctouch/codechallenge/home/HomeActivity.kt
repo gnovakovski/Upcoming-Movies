@@ -1,100 +1,59 @@
 package com.arctouch.codechallenge.home
 
-import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import com.arctouch.codechallenge.api.TmdbApi
-import com.arctouch.codechallenge.base.BaseActivity
-import com.arctouch.codechallenge.data.Cache
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.home_activity.*
-import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.support.annotation.NonNull
-import android.util.Log
+import android.support.v4.app.FragmentActivity
+import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.AppCompatImageView
+import android.widget.ProgressBar
 import com.arctouch.codechallenge.R
-import com.arctouch.codechallenge.model.Movie
+import com.arctouch.codechallenge.api.ApiUtils
 
 
+class HomeActivity :
+        AppCompatActivity(), HomeActivityViewPresenter {
 
+    private val homePresenter: HomeActivityViewPresenter = HomeActivityViewPresenterLogic(this)
 
-class HomeActivity : BaseActivity() {
-
-    var isLoading = false
-    var currentPage : Long = 1
-    var moviesWithGenres : MutableList<Movie>  = mutableListOf()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home_activity)
 
-        api.genres(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    Cache.cacheGenres(it.genres)
-                    initList()
-                }
-
-
-
-
-        initScrollListener()
+        homePresenter.onCreate()
     }
 
-    private fun initList(){
-        api.upcomingMovies(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, 1, "")
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    moviesWithGenres  =  it.results.map { movie ->
-                        movie.copy(genres = Cache.genres.filter { movie.genreIds?.contains(it.id) == true })
-                    }.toMutableList()
-                    recyclerView.adapter = HomeAdapter(moviesWithGenres)
-                    progressBar.visibility = View.GONE
-                }
+    override fun onCreate() {
+        homePresenter.onCreate()
     }
 
-    private fun initScrollListener() {
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(@NonNull recyclerView: RecyclerView?, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-            }
-
-            override fun onScrolled(@NonNull recyclerView: RecyclerView?, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-
-                val linearLayoutManager = recyclerView!!.layoutManager as LinearLayoutManager
-
-                if (!isLoading) {
-
-                    if (linearLayoutManager != null && linearLayoutManager.findLastCompletelyVisibleItemPosition() == recyclerView.adapter.itemCount - 1) {
-                        //bottom of list!
-                        loadMore()
-                        isLoading = true
-                    }
-                }
-            }
-        })
-
+    override fun onResume() {
+        super.onResume()
+        homePresenter.onResume()
     }
 
-     private fun loadMore(){
-         currentPage += 1
+    override fun setOnBackPressed(backMore: AppCompatImageView) {
+        homePresenter.setOnBackPressed(backMore)
+    }
 
-             api.upcomingMovies(TmdbApi.API_KEY, TmdbApi.DEFAULT_LANGUAGE, currentPage,  "")
-                     .subscribeOn(Schedulers.io())
-                     .observeOn(AndroidSchedulers.mainThread())
-                     .subscribe {
-                         moviesWithGenres.addAll(it.results.map { movie ->
-                             movie.copy(genres = Cache.genres.filter { movie.genreIds?.contains(it.id) == true })
-                         }.toMutableList())
+    override fun initGenres(apiUtils: ApiUtils) {
+        homePresenter.initGenres(apiUtils)
+    }
 
-                         recyclerView.adapter.notifyDataSetChanged()
-                         isLoading = false
-                     }
-         }
+    override fun initList(progressBar: ProgressBar, recyclerView: RecyclerView, apiUtils: ApiUtils) {
+        homePresenter.initList(progressBar, recyclerView, apiUtils)
+    }
 
+    override fun initScrollListener(recyclerView: RecyclerView) {
+        homePresenter.initScrollListener(recyclerView)
+    }
+
+    override fun loadMore(apiUtils: ApiUtils, recyclerView: RecyclerView) {
+        homePresenter.loadMore(apiUtils, recyclerView)
+    }
+
+    override fun getActivity(): FragmentActivity {
+        return this
+    }
 
 
 }

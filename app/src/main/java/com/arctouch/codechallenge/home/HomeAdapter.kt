@@ -2,12 +2,11 @@ package com.arctouch.codechallenge.home
 
 import android.content.Intent
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.arctouch.codechallenge.R
-import com.arctouch.codechallenge.data.Cache
+import com.arctouch.codechallenge.details.DetailsActivity
 import com.arctouch.codechallenge.model.Movie
 import com.arctouch.codechallenge.util.MovieImageUrlBuilder
 import com.bumptech.glide.Glide
@@ -25,7 +24,7 @@ class HomeAdapter(private val movies: List<Movie>) : RecyclerView.Adapter<HomeAd
         fun bind(movie: Movie) {
 
                 itemView.loadItemProgressBar.visibility = View.GONE
-                itemView.titleTextView.text = movie!!.title
+                itemView.titleTextView.text = movie.title
                 itemView.genresTextView.text = movie.genres?.joinToString(separator = ", ") { it.name }
                 itemView.releaseDateTextView.text = movie.releaseDate
 
