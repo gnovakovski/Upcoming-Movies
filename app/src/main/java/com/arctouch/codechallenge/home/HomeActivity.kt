@@ -57,7 +57,6 @@ class HomeActivity : BaseActivity() {
 
                     if (linearLayoutManager != null && linearLayoutManager.findLastCompletelyVisibleItemPosition() == recyclerView.adapter.itemCount - 1) {
                         //bottom of list!
-                        Log.d("onScrolled", " end of list")
                         loadMore()
                         isLoading = true
                     }

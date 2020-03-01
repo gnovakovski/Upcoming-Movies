@@ -1,11 +1,13 @@
 package com.arctouch.codechallenge.home
 
+import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.arctouch.codechallenge.R
+import com.arctouch.codechallenge.data.Cache
 import com.arctouch.codechallenge.model.Movie
 import com.arctouch.codechallenge.util.MovieImageUrlBuilder
 import com.bumptech.glide.Glide
@@ -32,6 +34,22 @@ class HomeAdapter(private val movies: List<Movie>) : RecyclerView.Adapter<HomeAd
                         .apply(RequestOptions().placeholder(R.drawable.ic_image_placeholder))
                         .into(itemView.posterImageView)
 
+
+                itemView.setOnClickListener(View.OnClickListener { v ->
+                    val intent = Intent(itemView.context, DetailsActivity::class.java)
+                    intent.putExtra("title", movie.title)
+                    val iterator = movie.genres
+                    var genres = ""
+                    iterator!!.forEach {
+                        genres += it.name + " "
+                    }
+                    intent.putExtra("genre", genres)
+                    intent.putExtra("release", movie.releaseDate)
+                    intent.putExtra("note", movie.voteAverage)
+                    intent.putExtra("overview", movie.overview)
+                    intent.putExtra("image", movie.posterPath)
+                    v.context.startActivity(intent)
+                })
         }
 
     }
